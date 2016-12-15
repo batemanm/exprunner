@@ -1,0 +1,338 @@
+#LyX 1.6.4.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Experiment Runner Manual
+\end_layout
+
+\begin_layout Author
+Dr Martin Bateman
+\end_layout
+
+\begin_layout Author
+mbateman@uclan.ac.uk
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Experiment running (exprunner) is a command line tool to aid you in running
+ simulation based experiments.
+ It expects you to set a script which configures a set of command line parameter
+s which are used to run the experiment.
+\end_layout
+
+\begin_layout Section
+Example scenario
+\end_layout
+
+\begin_layout Standard
+Let's assume we have a ns-2 script called bulkTransferTest.tcl which is used
+ to test how long a file would take to tranfer via FTP over a set of given
+ link bandwidths, with varying RTTs and with varying file sizes.
+ The parameters we are interested in are:
+\end_layout
+
+\begin_layout Itemize
+File size - 10megabytes, 25megabytes, 50megabytes, 75megabytes and 100megabytes
+\end_layout
+
+\begin_layout Itemize
+Delay - 10ms, 25ms, 50ms, 75ms and 100ms
+\end_layout
+
+\begin_layout Itemize
+Bandwidths - 10Mbps, 25Mbps, 50Mbps, 75Mbps and 100Mbps
+\end_layout
+
+\begin_layout Standard
+The command is called as follows
+\end_layout
+
+\begin_layout Quote
+bulkTransferText.tcl <fileSize> <delay> <bandwidth>
+\end_layout
+
+\begin_layout Standard
+Where 
+\end_layout
+
+\begin_layout Itemize
+<fileSize> is replaced by the file size in bytes
+\end_layout
+
+\begin_layout Itemize
+<delay> is replaced by the delay
+\end_layout
+
+\begin_layout Itemize
+<bandwidth> is replaced by the bandwidth
+\end_layout
+
+\begin_layout Standard
+Examples of use are
+\end_layout
+
+\begin_layout Enumerate
+bulkTransferTest.tcl 10240000 10ms 10Mb
+\end_layout
+
+\begin_layout Enumerate
+bulkTransferTest.tcl 10240000 10ms 25Mb
+\end_layout
+
+\begin_layout Enumerate
+bulkTransferTest.tcl 10240000 10ms 50Mb
+\end_layout
+
+\begin_layout Enumerate
+...
+\end_layout
+
+\begin_layout Enumerate
+bulkTransferTest.tcl 1024000000 100ms 100Mb
+\end_layout
+
+\begin_layout Section
+Using Experiment Runner
+\end_layout
+
+\begin_layout Standard
+Experiment Running is configure by a simple script which lists the parameters,
+ the command and the ordering of the parameters on the command line.
+ The example in Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Example-configuration-script"
+
+\end_inset
+
+shows the Experiment Runner configuration script for the bulkTransferTest.tcl
+ example.
+ We'll take a closer look at the first line.
+ It configures the command line that will be used to run the experiment.
+ In this case bulkTransferTest.tcl %fs% %rtt% %bw%.
+ The text surrounded by percentage signs (%) are placeholder for the actual
+ parameters.
+ The next three lines create the set of parameters we are dealing with.
+ If we examine the first of these, which deals with the file sizes (fs).
+ The first argument to the newParameters method is the text to look for
+ in the command line.
+ This text (in this case %fs%) is replaced with the current parameter.
+ Next is a space seperated list of the possible parameters, we can use either
+ number or strings in the parameter list.
+ Experiment Runner will automatically create a log file which contains the
+ list of command that have been run as well as the STDOUT and STDERR from
+ the command after it has been run.
+ This log file can also be used to restart an experiment which has stopped
+ before all the commands have been run.
+ Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Using-a-log"
+
+\end_inset
+
+ shows the script from Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Example-configuration-script"
+
+\end_inset
+
+ altered so that the experiment can restart if it is stopped before the
+ entire experiment has finished.
+\end_layout
+
+\begin_layout Standard
+When Experiment Runner starts up with the script from Figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Using-a-log"
+
+\end_inset
+
+ it loads the state of the experiment from the log file, any runs that it
+ sees have been completed are ignore and only command lines that are not
+ complete are schedule for execution.
+\end_layout
+
+\begin_layout Standard
+Finally there is a reserved parameter %RANDOM% this will be replaced by
+ a random number generated by erunner.
+ The random number is an integer in the range -MAXINT to MAXINT.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+runner.setCommand ("bulkTransferTest.tcl %fs% %rtt% %bw%");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%fs%", "10 25 50 75 100");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%rtt%", "10 25 50 75 100");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%bw%", "10 25 50 75 100");
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Example configuration script
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Example-configuration-script"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+runner.setCommand ("bulkTransferTest.tcl %fs% %rtt% %bw%");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.setLogFileName ("bulkTransferTest.log");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%fs", "10 25 50 75 100");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%rtt%", "10 25 50 75 100");
+\end_layout
+
+\begin_layout Plain Layout
+
+runner.newParameters ("%bw%", "10 25 50 75 100");
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Using a log file
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Using-a-log"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

@@ -1,0 +1,67 @@
+<project name="erunner" basedir="." default="main">
+<!-- Here it is project dependent properties -->
+	<property name="main-class"  value="uk.ac.uclan.cs.erunner.Main"/>				<!-- The main class -->
+	<property name="javadoc.header" value="Experiment Runner"/>				<!-- The header to add to all the generated javadoc -->
+
+<!-- Global properties -->
+	<property name="docs.dir"      value="docs"/>							<!-- The directory where the docs are kept -->
+	<property name="javadoc.dir"   value="${docs.dir}/javadoc"/>					<!-- The directory where the javadoc is stored -->
+	<property name="src.dir"       value="src"/>							<!-- The directory where the source code is kept -->
+	<property name="lib.dir"       value="lib"/>							<!-- The directory where any additional libaries are kept -->
+	<property name="build.dir"     value="build"/>							<!-- The directory where the project is built -->
+	<property name="classes.dir"   value="${build.dir}/classes"/>					<!-- The directory to store the compiled classes -->
+	<property name="jar.dir"       value="${build.dir}/jar"/>					<!-- The directory to store the created jar file -->
+
+	<path id="classpath"> <!-- Set the classpath used for compiling. Every jar in ${lib.dir} is included -->
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+	</path>
+
+	<path id="classpath.runtime"> <!-- Set the classpath used for running. Every jar in ${lib.jar} is included as well as the jar created from the project source -->
+		<fileset dir="${lib.dir}" includes="**/*.jar"/>
+		<fileset dir="${jar.dir}" includes="**/*.jar"/>
+	</path>
+
+	<target name="clean" description="Removes all the class files">
+		<delete dir="${build.dir}"/>
+		<delete dir="${javadoc.dir}"/>
+	</target>
+
+	<target name="run" depends="jar" description="Run erunner">
+		<echo>Running erunner</echo>
+		<java classpathref="classpath.runtime" classname="${main-class}" fork="true"></java>	
+	</target>
+
+	<target name="compile" description="Compile the java source code">
+		<echo>Compiling</echo>
+		<mkdir dir="${classes.dir}"/>
+		<javac debug="yes" destdir="${classes.dir}" classpathref="classpath">
+			<src path="${src.dir}"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile" description="Creates a jar for the project">
+		<echo>Creating project jar file</echo>
+		<mkdir dir="${jar.dir}"/>
+		<jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="clean-build" depends="clean,jar" description="Performs a clean and then a rebuild"/>
+
+	<target name="main" depends="compile" description="Main entry point compiles the source">
+		<mkdir dir="${jar.dir}"/>
+	</target>
+
+	<target name="javadocs" description="Generates the javadoc for the project and places it in ${javadoc.dir}">
+ 		<javadoc destdir="${javadoc.dir}" 
+			sourcepath="${src.dir}"
+			header="${javadoc.header}"
+			packagenames="*" 
+			excludepackagenames="${javadoc.exclude}">
+		</javadoc>
+	</target>
+
+</project>
